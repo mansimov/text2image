@@ -12,8 +12,7 @@
 	],
 
 	"validateAfter": 2,
-	"save": true,
-	"savedir": "/ais/gobi3/u/emansim/variational-weights",
+	"save": false,
 	"lr": 0.001,
 	"epochs": 200,
 	"data": {
