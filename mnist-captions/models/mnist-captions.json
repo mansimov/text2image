@@ -1,0 +1,24 @@
+{
+    "model": [
+        {
+            "dimY": "23",
+            "dimLangRNN": "128",
+            "dimAlign": "512",
+            "dimX": "3600",
+            "dimReadAttent": "8",
+            "dimWriteAttent": "8",
+            "dimRNNEnc": "300",
+            "dimRNNDec": "300",
+            "dimZ": "150",
+            "runSteps": "32"
+        }
+    ],
+
+    "validateAfter": "3",
+    "save": "False",
+    "lr": "0.001",
+    "epochs": "1000",
+    "batch_size": "100",
+    "reduceLRAfter": "0",
+    "pathToWeights": "None"
+}
