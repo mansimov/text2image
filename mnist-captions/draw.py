@@ -17,6 +17,8 @@ import datetime
 import sys
 import json
 
+floatX = theano.config.floatX
+
 np.random.seed(np.random.randint(1 << 30))
 rng = RandomStreams(seed=np.random.randint(1 << 30)) #np.random.randint(1 << 30)
 
@@ -77,7 +79,7 @@ def build_lstm_attention_vae(dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dim
     kl_0 = T.zeros(())
 
     run_steps = T.scalar(dtype='int32')
-    eps = rng.normal(size=(runStepsInt,batch_size,dimZ), avg=0.0, std=1.0, dtype=theano.config.floatX)
+    eps = rng.normal(size=(runStepsInt,batch_size,dimZ), avg=0.0, std=1.0, dtype=floatX)
 
     params = [W_hdec_read_attent, b_read_attent, W_henc_henc, W_inp_henc, b_henc, W_henc_mu, W_henc_logsigma, b_mu, b_logsigma, W_hdec_hdec, W_z_hdec, b_hdec, W_hdec_write_attent, b_write_attent, W_hdec_c, b_c]
 
@@ -123,7 +125,7 @@ def build_lstm_attention_vae(dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dim
         window_t = T.dot(h_t_dec, W_hdec_c) + b_c
         g_y_write, g_x_write, delta_write, sigma_write, gamma_write = write_attention_model.matrix2att(write_attent_params)
         c_t = c_tm1 + 1.0/gamma_write * write_attention_model.write(window_t, g_y_write, g_x_write, delta_write, sigma_write)
-        return [c_t, h_t_dec, cell_t_dec, h_t_enc, cell_t_enc, kl_t, read_attent_params, write_attent_params]
+        return [c_t.astype(floatX), h_t_dec.astype(floatX), cell_t_dec.astype(floatX), h_t_enc.astype(floatX), cell_t_enc.astype(floatX), kl_t.astype(floatX), read_attent_params, write_attent_params]
 
     def recurrence_from_prior(eps_t, c_tm1, h_tm1_dec, cell_tm1_dec):
         z_t = eps_t
@@ -141,7 +143,7 @@ def build_lstm_attention_vae(dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dim
         window_t = T.dot(h_t_dec, W_hdec_c) + b_c
         g_y_write, g_x_write, delta_write, sigma_write, gamma_write = write_attention_model.matrix2att(write_attent_params)
         c_t = c_tm1 + 1.0/gamma_write * write_attention_model.write(window_t, g_y_write, g_x_write, delta_write, sigma_write)
-        return [c_t, h_t_dec, cell_t_dec, write_attent_params]
+        return [c_t.astype(floatX), h_t_dec.astype(floatX), cell_t_dec.astype(floatX), write_attent_params]
 
 
     all_params = params[:]
@@ -217,7 +219,7 @@ class ReccurentAttentionVAE():
                                                 outputs=[self._kl_final, self._logpxz, self._log_likelihood],
                                                 updates=self._updates_train,
                                                 givens={
-                                                    self._x: data[(self._index_val * batch_size):((self._index_val + 1) * batch_size)].astype(theano.config.floatX)
+                                                    self._x: data[(self._index_val * batch_size):((self._index_val + 1) * batch_size)].astype(floatX)
                                                 })
         t2 = datetime.datetime.now()
         print (t2-t1)
@@ -230,7 +232,7 @@ class ReccurentAttentionVAE():
         print(t2-t1)
 
         self._index = T.scalar(dtype='int32') # index to the minibatch
-        self._lr = T.scalar('lr', dtype=theano.config.floatX)
+        self._lr = T.scalar('lr', dtype=floatX)
 
         # Currently use AdaGrad & threshold gradients
         his = []
@@ -260,7 +262,7 @@ class ReccurentAttentionVAE():
                                                 outputs=[self._kl_final, self._logpxz, self._log_likelihood, self._c_ts, self._read_attent_params, self._write_attent_params],
                                                 updates=self._updates_train_and_params,
                                                 givens={
-                                                    self._x: self.train_data[(self._index * batch_size):((self._index + 1) * batch_size)].astype(theano.config.floatX)
+                                                    self._x: self.train_data[(self._index * batch_size):((self._index + 1) * batch_size)].astype(floatX)
                                                 })
         t2 = datetime.datetime.now()
         print (t2-t1)
