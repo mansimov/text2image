@@ -9,12 +9,34 @@ import pylab
 from util import sigmoid
 import scipy
 from attention import SelectiveAttentionModel
+from argparse import ArgumentParser
+from PIL import Image
+import os
 
 draw = __import__('draw')
 ReccurentAttentionVAE = draw.ReccurentAttentionVAE
 
+# main code (not in a main function to be able to run in IPython as well).
+def in_ipython():
+  try:
+    __IPYTHON__
+  except NameError:
+    return False
+  else:
+    return True
+
 if __name__ == '__main__':
-    model_name = sys.argv[1]
+    parser = ArgumentParser()
+    parser.add_argument('model_name', type=str,
+                   help='json settings for model')
+    parser.add_argument("--weights", type=str, dest="weights_file",
+                default=None, help="Filename with weights")
+    parser.add_argument('--subdir', dest='subdir', default="sample")
+    args = parser.parse_args()
+
+    model_name = args.model_name
+    subdir = args.subdir
+
     with open(model_name) as model_file:
         model = json.load(model_file)
 
@@ -48,6 +70,12 @@ if __name__ == '__main__':
     pathToWeights = None
     if "pathToWeights" in model:
         pathToWeights = model["pathToWeights"]
+    if args.weights_file:
+        pathToWeights = args.weights_file
+
+    ipython_mode = in_ipython()
+    if (not ipython_mode) and (not os.path.exists(subdir)):
+        os.makedirs(subdir)
 
     displayEachStep = False
 
@@ -65,15 +93,25 @@ if __name__ == '__main__':
             column = j%10
             total_image[(row*28):((row+1)*28),(column*28):((column+1)*28)] = c[:][:]
         
-        if displayEachStep:
-            pylab.figure()
-            pylab.gray()
-            pylab.imshow(total_image)
-            pylab.show(block=True)
-            pylab.close()
+        if ipython_mode:
+            if displayEachStep:
+                pylab.figure()
+                pylab.gray()
+                pylab.imshow(total_image)
+                pylab.show(block=True)
+                pylab.close()
+        else:
+            img = Image.fromarray((255*total_image).astype(np.uint8))
+            img.save("{0}/time-{1:03d}.png".format(subdir, i))
 
-    pylab.figure()
-    pylab.gray()
-    pylab.imshow(total_image)
-    pylab.show(block=True)
-    pylab.close()    
+    if ipython_mode:
+        pylab.figure()
+        pylab.gray()
+        pylab.imshow(total_image)
+        pylab.show(block=True)
+        pylab.close()
+    else:
+        img = Image.fromarray((255*total_image).astype(np.uint8))
+        img.save("{0}/sample.png".format(subdir))
+        os.system("convert -delay 5 {0}/time-*.png -delay 300 {0}/sample.png {0}/sequence.gif".format(subdir))
+
