@@ -311,13 +311,15 @@ class ReccurentAttentionVAE():
 
 		weights_f.close()
 
-	def train(self, lr, epochs, save=False, validateAfter=0):
+	def train(self, lr, epochs, save=False, savedir=None, validateAfter=0):
 		self._build_train_function()
 		sys.stdout.flush()
 
 		if save == True:
 			curr_time = datetime.datetime.now()
-			weights_f_name = ("/ais/gobi3/u/emansim/variational-weights/attention-vae-%s-%s-%s-%s-%s-%s.h5" % (curr_time.year, curr_time.month, curr_time.day, curr_time.hour, curr_time.minute, curr_time.second))
+			if savedir == None:
+				savedir == "."
+			weights_f_name = ("%s/attention-vae-%s-%s-%s-%s-%s-%s.h5" % (savedir, curr_time.year, curr_time.month, curr_time.day, curr_time.hour, curr_time.minute, curr_time.second))
 			print weights_f_name
 
 		all_outputs = np.array([0.0,0.0,0.0])
@@ -360,10 +362,6 @@ class ReccurentAttentionVAE():
 
 if __name__ == '__main__':
 
-	data = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["train"])
-
-	val_data = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["validation"]) #validation
-
 	model_name = sys.argv[1]
 	with open(model_name) as model_file:
 		model = json.load(model_file)
@@ -381,5 +379,27 @@ if __name__ == '__main__':
 	lr = float(model["lr"])
 	epochs = int(model["epochs"])
 
-	rvae = ReccurentAttentionVAE(dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dimRNNDec, dimZ, runSteps, data, valData=val_data)
-	rvae.train(lr, epochs, save=save, validateAfter=validateAfter)
+	if "data" in model:
+		train_key = model["data"]["train"]["key"]
+		train_file = model["data"]["train"]["file"]
+		val_key = model["data"]["validation"]["key"]
+		val_file = model["data"]["validation"]["file"]
+	else:
+		train_file = "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		train_key = "train"
+		val_file = "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		val_key = "validation"
+
+	if "savedir" in model:
+		savedir = model["savedir"]
+	else:
+		savedir = "/ais/gobi3/u/emansim/variational-weights"
+
+	print(savedir)
+	sys.exit(0)
+
+	train_data = np.copy(h5py.File(train_file, 'r')[train_key])
+	val_data = np.copy(h5py.File(val_file, 'r')[val_key])
+
+	rvae = ReccurentAttentionVAE(dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dimRNNDec, dimZ, runSteps, train_data, valData=val_data)
+	rvae.train(lr, epochs, save=save, savedir=savedir, validateAfter=validateAfter)

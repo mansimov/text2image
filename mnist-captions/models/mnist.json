@@ -13,6 +13,17 @@
 
 	"validateAfter": 2,
 	"save": true,
+	"savedir": "/ais/gobi3/u/emansim/variational-weights",
 	"lr": 0.001,
-	"epochs": 200
+	"epochs": 200,
+	"data": {
+		"train": {
+			"key": "train",
+			"file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		},
+		"validation": {
+			"key": "validation",
+			"file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		}
+	}
 }
