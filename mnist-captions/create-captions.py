@@ -127,20 +127,29 @@ def create_1digit_mnist_image_bottomleft(digit1):
     return image
 
 
-def create_mnist_captions_dataset(data, labels, num=10000):
-
+def create_mnist_captions_dataset(data, labels, banned, num=10000):
     images = np.zeros((num,60*60))
     captions = np.zeros((num,12))
     
     counts = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    for n in xrange(num):
+    curr_num = 0
+    while True:
+        # only left/right case for now
+        k = randint(0,7)
+
         # Select 2 random digits
         i = randint(0,data.shape[0]-1)
         j = randint(0,data.shape[0]-1)
 
-        # only left/right case for now
-        k = randint(0,7)
+        # some cases are hidden from training set
+        if k <= 3:
+            if labels[i] == banned[k*2] or labels[j] == banned[k*2+1]:
+                continue
+        else:
+            if labels[i] == banned[k+4]:
+                continue
+
         if k == 0:
             sentence = 'the digit %d is on the left of the digit %d .' % (labels[i], labels[j])
         elif k == 1:
@@ -158,24 +167,28 @@ def create_mnist_captions_dataset(data, labels, num=10000):
         elif k == 7:
             sentence = 'the digit %d is at the bottom left of the image .' % (labels[i])
 
-
         counts[k] = counts[k] + 1
 
         sentence_matrix = sent2matrix(sentence, dictionary)
-        captions[n,:] = sentence_matrix
+        captions[curr_num,:] = sentence_matrix
 
         if k == 0 or k == 1:
-            images[n,:] = create_2digit_mnist_image_leftright(data[i,:], data[j,:])
+            images[curr_num,:] = create_2digit_mnist_image_leftright(data[i,:], data[j,:])
         if k == 2 or k == 3:
-            images[n,:] = create_2digit_mnist_image_topbottom(data[i,:], data[j,:])
+            images[curr_num,:] = create_2digit_mnist_image_topbottom(data[i,:], data[j,:])
         if k == 4:
-            images[n,:] = create_1digit_mnist_image_topleft(data[i,:])
+            images[curr_num,:] = create_1digit_mnist_image_topleft(data[i,:])
         if k == 5:
-            images[n,:] = create_1digit_mnist_image_bottomright(data[i,:])
+            images[curr_num,:] = create_1digit_mnist_image_bottomright(data[i,:])
         if k == 6:
-            images[n,:] = create_1digit_mnist_image_topright(data[i,:])
+            images[curr_num,:] = create_1digit_mnist_image_topright(data[i,:])
         if k == 7:
-            images[n,:] = create_1digit_mnist_image_bottomleft(data[i,:])
+            images[curr_num,:] = create_1digit_mnist_image_bottomleft(data[i,:])
+
+        curr_num += 1
+        #print curr_num
+        if curr_num == num:
+            break
 
     return np.float32(images), np.int32(captions), counts
 
@@ -188,18 +201,3 @@ if __name__ == '__main__':
     pylab.gray()
     pylab.imshow(image.reshape((60,60)), interpolation='nearest')
     pylab.show(block=True)
-
-    """
-    images, captions = create_2digit_mnist_captions_dataset(data, labels, 10)
-    
-    index = 5
-    print matrix2sent(captions[index], reverse_dictionary)
-    print captions
-    print len(dictionary)
-    """
-    """
-    pylab.figure()
-    pylab.gray()
-    pylab.imshow(images[index].reshape((60,60)), interpolation='nearest')
-    pylab.show(block=True)
-    """
