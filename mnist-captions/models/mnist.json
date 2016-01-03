@@ -1,18 +1,29 @@
 {
 	"model": [
 		{
-			"dimX": "784",
-			"dimReadAttent": "5",
-			"dimWriteAttent": "5",
-			"dimRNNEnc": "256",
-			"dimRNNDec": "256",
-			"dimZ": "100",
-			"runSteps": "64"
+			"dimX": 784,
+			"dimReadAttent": 5,
+			"dimWriteAttent": 5,
+			"dimRNNEnc": 256,
+			"dimRNNDec": 256,
+			"dimZ": 100,
+			"runSteps": 64
 		}
 	],
 
-	"validateAfter": "2",
-	"save": "False",
-	"lr": "0.001",
-	"epochs": "200"
+	"validateAfter": 2,
+	"save": true,
+	"savedir": "/ais/gobi3/u/emansim/variational-weights",
+	"lr": 0.001,
+	"epochs": 200,
+	"data": {
+		"train": {
+			"key": "train",
+			"file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		},
+		"validation": {
+			"key": "validation",
+			"file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
+		}
+	}
 }
