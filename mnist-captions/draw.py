@@ -218,7 +218,7 @@ class ReccurentAttentionVAE():
 												outputs=[self._kl_final, self._logpxz, self._log_likelihood],
 												updates=self._updates_train,
 												givens={
-													self._x: data[(self._index_val * batch_size):((self._index_val + 1) * batch_size)]
+													self._x: data[(self._index_val * batch_size):((self._index_val + 1) * batch_size)].astype(theano.config.floatX)
 												})
 		t2 = datetime.datetime.now()
 		print (t2-t1)
@@ -261,7 +261,7 @@ class ReccurentAttentionVAE():
 												outputs=[self._kl_final, self._logpxz, self._log_likelihood, self._c_ts, self._read_attent_params, self._write_attent_params],
 												updates=self._updates_train_and_params,
 												givens={
-													self._x: self.train_data[(self._index * batch_size):((self._index + 1) * batch_size)]
+													self._x: self.train_data[(self._index * batch_size):((self._index + 1) * batch_size)].astype(theano.config.floatX)
 												})
 		t2 = datetime.datetime.now()
 		print (t2-t1)
