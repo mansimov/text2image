@@ -205,7 +205,6 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         z_t = mu_enc + T.exp(log_sigma_enc) * eps_t
 
         kl_t = kl_tm1 + T.sum(-1 + ((mu_enc - mu_prior_tm1)**2  + T.exp(2*log_sigma_enc)) / (T.exp(2 * log_sigma_prior_tm1)) - 2*log_sigma_enc + 2*log_sigma_prior_tm1)
-        #kl_t = kl_tm1 + T.sum(-log_sigma_enc + 0.5 * (T.exp(2*log_sigma_enc) + mu_enc**2) - 0.5)
 
         # Step 5
         lstm_t_dec = T.dot(h_tm1_dec, W_hdec_hdec) + T.dot(z_t, W_z_hdec) + T.dot(s_t, W_s_hdec) + b_hdec
@@ -215,7 +214,7 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         o_t_dec = T.nnet.sigmoid(lstm_t_dec[:, 3*dimRNNDec:4*dimRNNDec])
         h_t_dec = o_t_dec * T.tanh(cell_t_dec)
 
-        # mu and logsigma depend on the activations of the hidden states of the decoder # reference to the Philip Bachman's paper (Data generation as sequential decision making)
+        # mu and logsigma depend on the activations of the hidden states of the decoder 
         mu_and_logsigma_prior_t = T.tanh(T.dot(h_t_dec, W_hdec_mu_and_logsigma_prior) + b_mu_and_logsigma_prior)
         mu_prior_t = mu_and_logsigma_prior_t[:, 0:dimZ]
         log_sigma_prior_t = mu_and_logsigma_prior_t[:, dimZ:2*dimZ]
@@ -464,15 +463,6 @@ class ReccurentAttentionVAE():
             dset = weights_f.create_dataset(params_names[i], self._params[i].shape.eval(), dtype='f')
             dset[:] = np.copy(self._params[i].eval())
 
-        dset = weights_f.create_dataset('c_ts', c_ts.shape, dtype='f')
-        dset[:] = np.copy(c_ts)
-
-        dset = weights_f.create_dataset('read_attent_params', read_attent_params.shape, dtype='f')
-        dset[:] = np.copy(read_attent_params)
-
-        dset = weights_f.create_dataset('write_attent_params', write_attent_params.shape, dtype='f')
-        dset[:] = np.copy(write_attent_params)
-
         weights_f.close()
 
     def train(self, lr, epochs, save=False, validateAfter=0):
@@ -591,15 +581,31 @@ if __name__ == '__main__':
         pathToWeights = None
 
     dimension = int(math.sqrt(dimX/3))
+
+    if "data" in model:
+        train_data_key = model["data"]["train_data"]["key"]
+        train_data_file = model["data"]["train_data"]["file"]
+        train_labels_key = model["data"]["train_labels"]["key"]
+        train_labels_file = model["data"]["train_labels"]["file"]
+        
+        val_data_key = model["data"]["validation_data"]["key"]
+        val_data_file = model["data"]["validation_data"]["file"]
+        val_labels_key = model["data"]["validation_labels"]["key"]
+        val_labels_file = model["data"]["validation_labels"]["file"]
+    else:
+        train_file = "/ais/gobi3/u/nitish/mnist/mnist.h5"
+        train_key = "train"
+        val_file = "/ais/gobi3/u/nitish/mnist/mnist.h5"
+        val_key = "validation"
+
+    train_data = np.copy(h5py.File(train_data_file, 'r')[train_key])
+    train_labels = np.copy(h5py.File(train_labels_file, 'r')[train_key])
     
-    data = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["train"])
-    labels = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["train_labels"])
+    val_data = np.copy(h5py.File(val_data_file, 'r')[val_key])
+    val_labels = np.copy(h5py.File(val_labels_file, 'r')[val_key])
 
-    val_data = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["validation"])
-    val_labels = np.copy(h5py.File('/ais/gobi3/u/nitish/mnist/mnist.h5', 'r')["validation_labels"])
+    print train_data.shape, train_labels.shape, val_data.shape, val_labels.shape
 
-    print data.shape, labels.shape, val_data.shape, val_labels.shape
-
-    rvae = ReccurentAttentionVAE(dimY, dimLangRNN, dimAlign, dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dimRNNDec, dimZ, runSteps, batch_size, reduceLRAfter, data, labels, valData=val_data, valLabels=val_labels, pathToWeights=pathToWeights)
+    rvae = ReccurentAttentionVAE(dimY, dimLangRNN, dimAlign, dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dimRNNDec, dimZ, runSteps, batch_size, reduceLRAfter, train_data, train_labels, valData=val_data, valLabels=val_labels, pathToWeights=pathToWeights)
     rvae.train(lr, epochs, save=save, validateAfter=validateAfter)
 

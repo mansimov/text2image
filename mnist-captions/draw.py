@@ -298,15 +298,6 @@ class ReccurentAttentionVAE():
             dset = weights_f.create_dataset(params_names[i], self._params[i].shape.eval(), dtype='f')
             dset[:] = np.copy(self._params[i].eval())
 
-        dset = weights_f.create_dataset('c_ts', c_ts.shape, dtype='f')
-        dset[:] = np.copy(c_ts)
-
-        dset = weights_f.create_dataset('read_attent_params', read_attent_params.shape, dtype='f')
-        dset[:] = np.copy(read_attent_params)
-
-        dset = weights_f.create_dataset('write_attent_params', write_attent_params.shape, dtype='f')
-        dset[:] = np.copy(write_attent_params)
-
         weights_f.close()
 
     def train(self, lr, epochs, save=False, savedir=None, validateAfter=0):
