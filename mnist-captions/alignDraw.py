@@ -27,6 +27,8 @@ print theano.config.scan.allow_gc
 print theano.config.allow_gc
 sys.stdout.flush()
 
+floatX = theano.config.floatX
+
 np.random.seed(np.random.randint(1 << 30))
 rng = RandomStreams(seed=np.random.randint(1 << 30))
 
@@ -105,11 +107,11 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         W_hdec_mu_and_logsigma_prior = shared_normal(dimRNNDec, 2*dimZ)
         b_mu_and_logsigma_prior = shared_zeros(2*dimZ)
 
-        h0_lang = theano.shared(np.zeros((1,dimLangRNN)).astype(theano.config.floatX))
-        h0_enc = theano.shared(np.zeros((1,dimRNNEnc)).astype(theano.config.floatX))
-        h0_dec = theano.shared(np.zeros((1,dimRNNDec)).astype(theano.config.floatX))
+        h0_lang = theano.shared(np.zeros((1,dimLangRNN)).astype(floatX))
+        h0_enc = theano.shared(np.zeros((1,dimRNNEnc)).astype(floatX))
+        h0_dec = theano.shared(np.zeros((1,dimRNNDec)).astype(floatX))
         # initialize c0 very very small, so that sigmoid(c0) ~= 0 which is an image with black background
-        c0 = theano.shared(-10*np.ones((1,dimX)).astype(theano.config.floatX))
+        c0 = theano.shared(-10*np.ones((1,dimX)).astype(floatX))
 
     params = [W_y_hLangEnc, W_hLangEnc_hLangEnc, b_hLangEnc, W_yRev_hLangEncRev, W_hLangEncRev_hLangEncRev, b_hLangEncRev, W_lang_align, W_hdec_align, b_align, v_align, W_s_hdec, W_hdec_read_attent, b_read_attent, W_henc_henc, W_inp_henc, b_henc, W_henc_mu, W_henc_logsigma, b_mu, b_logsigma, W_hdec_hdec, W_z_hdec, b_hdec, W_hdec_write_attent, b_write_attent, W_hdec_c, b_c, W_hdec_mu_and_logsigma_prior, b_mu_and_logsigma_prior, h0_lang, h0_enc, h0_dec, c0]
 
@@ -127,7 +129,7 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
     log_sigma_prior_0 =  T.zeros((y.shape[0],dimZ))
 
     run_steps = T.scalar(dtype='int32')
-    eps = rng.normal(size=(runStepsInt,y.shape[0],dimZ), avg=0.0, std=1.0, dtype=theano.config.floatX)
+    eps = rng.normal(size=(runStepsInt,y.shape[0],dimZ), avg=0.0, std=1.0, dtype=floatX)
 
     def recurrence_lang(y_t, h_tm1, cell_tm1, W_y_h, W_h_h, b_h):
         # Transform y_t into correct representation
@@ -227,7 +229,7 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         x_t_write = write_attention_model.write(window_t, g_y_write, g_x_write, delta_write, sigma_write)
 
         c_t = c_tm1 + 1.0/gamma_write * x_t_write
-        return [c_t, h_t_dec, cell_t_dec, h_t_enc, cell_t_enc, kl_t, mu_prior_t, log_sigma_prior_t, read_attent_params, write_attent_params]
+        return [c_t.astype(floatX), h_t_dec.astype(floatX), cell_t_dec.astype(floatX), h_t_enc.astype(floatX), cell_t_enc.astype(floatX), kl_t.astype(floatX), mu_prior_t.astype(floatX), log_sigma_prior_t.astype(floatX), read_attent_params, write_attent_params]
 
 
     def recurrence_from_prior(eps_t, c_tm1, h_tm1_dec, cell_tm1_dec, mu_prior_tm1, log_sigma_prior_tm1):
@@ -268,7 +270,7 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         x_t_write = write_attention_model.write(window_t, g_y_write, g_x_write, delta_write, sigma_write)
 
         c_t = c_tm1 + 1.0/gamma_write * x_t_write
-        return [c_t, h_t_dec, cell_t_dec, mu_prior_t, log_sigma_prior_t, write_attent_params, alpha.T]
+        return [c_t.astype(floatX), h_t_dec.astype(floatX), cell_t_dec.astype(floatX), mu_prior_t.astype(floatX), log_sigma_prior_t, write_attent_params, alpha.T]
 
     all_params = params[:]
     all_params.append(x)
@@ -391,7 +393,7 @@ class ReccurentAttentionVAE():
 
         self._index_cap = T.vector(dtype='int32') # index to the minibatch
         self._index_im = T.vector(dtype='int32')
-        self._lr = T.scalar('lr', dtype=theano.config.floatX)
+        self._lr = T.scalar('lr', dtype=floatX)
 
         # Currently use AdaGrad & threshold gradients
         his = []
@@ -465,7 +467,7 @@ class ReccurentAttentionVAE():
 
         weights_f.close()
 
-    def train(self, lr, epochs, save=False, validateAfter=0):
+    def train(self, lr, epochs, save=False, savedir=None, validateAfter=0):
         self._build_train_function()
         sys.stdout.flush()
 
@@ -474,8 +476,9 @@ class ReccurentAttentionVAE():
 
         if save == True:
             curr_time = datetime.datetime.now()
-            # /nobackup_b/emansim/variational-weights/
-            weights_f_name = ("/nobackup_b/emansim/variational-weights/attention-vae-%s-%s-%s-%s-%s-%s.h5" % (curr_time.year, curr_time.month, curr_time.day, curr_time.hour, curr_time.minute, curr_time.second))
+            if savedir == None:
+                savedir == "."
+            weights_f_name = ("%s/attention-vae-%s-%s-%s-%s-%s-%s.h5" % (savedir, curr_time.year, curr_time.month, curr_time.day, curr_time.hour, curr_time.minute, curr_time.second))
             print weights_f_name
 
         all_outputs = np.array([0.0,0.0,0.0])
@@ -598,14 +601,18 @@ if __name__ == '__main__':
         val_file = "/ais/gobi3/u/nitish/mnist/mnist.h5"
         val_key = "validation"
 
-    train_data = np.copy(h5py.File(train_data_file, 'r')[train_key])
-    train_labels = np.copy(h5py.File(train_labels_file, 'r')[train_key])
+    train_data = np.copy(h5py.File(train_data_file, 'r')[train_data_key])
+    train_labels = np.copy(h5py.File(train_labels_file, 'r')[train_labels_key])
     
-    val_data = np.copy(h5py.File(val_data_file, 'r')[val_key])
-    val_labels = np.copy(h5py.File(val_labels_file, 'r')[val_key])
+    val_data = np.copy(h5py.File(val_data_file, 'r')[val_data_key])
+    val_labels = np.copy(h5py.File(val_labels_file, 'r')[val_labels_key])
 
     print train_data.shape, train_labels.shape, val_data.shape, val_labels.shape
 
+    savedir = None
+    if "savedir" in model:
+        savedir = model["savedir"]
+
     rvae = ReccurentAttentionVAE(dimY, dimLangRNN, dimAlign, dimX, dimReadAttent, dimWriteAttent, dimRNNEnc, dimRNNDec, dimZ, runSteps, batch_size, reduceLRAfter, train_data, train_labels, valData=val_data, valLabels=val_labels, pathToWeights=pathToWeights)
-    rvae.train(lr, epochs, save=save, validateAfter=validateAfter)
+    rvae.train(lr, epochs, save=save, savedir=savedir, validateAfter=validateAfter)
 

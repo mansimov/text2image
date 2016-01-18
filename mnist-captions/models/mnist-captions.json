@@ -16,6 +16,7 @@
 
     "validateAfter": 3,
     "save": false,
+    "savedir": "/nobackup_b/emansim/variational-weights",
     "lr": 0.001,
     "epochs": 1000,
     "batch_size": 100,
@@ -30,7 +31,7 @@
             "key": "train_labels",
             "file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
         },
-        "validation": {
+        "validation_data": {
             "key": "validation",
             "file": "/ais/gobi3/u/nitish/mnist/mnist.h5"
         },
