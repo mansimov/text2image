@@ -1,2 +1,0 @@
-## MNIST with Captions
-
