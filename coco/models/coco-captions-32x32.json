@@ -10,7 +10,7 @@
             "dimRNNEnc": "550",
             "dimRNNDec": "550",
             "dimZ": "275",
-            "runSteps": "32",
+            "runSteps": "32"
         }
     ],
 
