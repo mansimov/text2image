@@ -4,6 +4,8 @@ Code for paper [Generating Images from Captions with Attention](http://arxiv.org
 
 We introduce a model that generates image blobs from natural language descriptions. The proposed model iteratively draws patches on a canvas, while attending to the relevant words in the description.
 
+![theimage](https://pbs.twimg.com/media/CTfsgHYXIAEXEOb.png)
+
 ### Getting Started
 
 The code is written in python. To use it you will need:
