@@ -16,6 +16,8 @@ The code is written in python. To use it you will need:
 * h5py (HDF5 (>= 1.8.11))
 * [skip-thoughts](https://github.com/ryankiros/skip-thoughts)
 
+Before running the code make sure that you set floatX to float32 in Theano settings.
+
 Additionally, depending on the tasks you will probably need to download these files by running:
 
 ```
@@ -49,7 +51,7 @@ python alignDraw.py models/mnist-captions.json
 To generate 60x60 MNIST images from captions as specified in appendix of the paper run
 
 ```
-python sample-captions.py models/mnist-captions.json
+python sample-captions.py --model models/mnist-captions.json --weights /path/to/trained-weights
 ```
 
 **Note**: I have also provided implementation of simple draw model in files draw.py and sample.py
