@@ -2,7 +2,7 @@
 
 Code for paper [Generating Images from Captions with Attention](http://arxiv.org/abs/1511.02793) by Elman Mansimov, Emilio Parisotto, Jimmy Ba and Ruslan Salakhutdinov; ICLR 2016.
 
-Generate image blobs from captions.
+We introduce a model that generates image blobs from natural language descriptions. The proposed model iteratively draws patches on a canvas, while attending to the relevant words in the description.
 
 ### Getting Started
 
@@ -12,7 +12,7 @@ The code is written in python. To use it you will need:
 * Theano 0.7 (mostly tested using commit from June/July 2015)
 * numpy and scipy
 * h5py (HDF5 (>= 1.8.11))
-* skip-thoughts
+* [skip-thoughts](https://github.com/ryankiros/skip-thoughts)
 
 Additionally, depending on the tasks you will probably need to download these files by running:
 
@@ -38,7 +38,7 @@ wget http://www.cs.toronto.edu/~emansim/datasets/text2image/dictionary.pkl
 
 ### MNIST with Captions
 
-To train a model simply go to mnist-captions folder and run
+To train the model simply go to mnist-captions folder and run
 
 ```
 python alignDraw.py models/mnist-captions.json
@@ -47,14 +47,28 @@ python alignDraw.py models/mnist-captions.json
 To generate 60x60 MNIST images from captions as specified in appendix of the paper run
 
 ```
-python sample
+python sample-captions.py models/mnist-captions.json
 ```
 
-**Note**: I have also provided implementation of simple DRAW model in files draw.py and sample.py
+**Note**: I have also provided implementation of simple draw model in files draw.py and sample.py
 
 ### Microsoft COCO
 
-### Note
+To train the model simply go to coco folder and run
+
+```
+python alignDraw.py models/coco-captions-32x32.json
+```
+
+To generate images from captions after training run
+
+```
+python sample-captions.py --model models/coco-captions-32x32.json --weights /path/to/trained-weights --dictionary dictionary.pkl --gan_path gan.hdf5 --skipthought_path /path/to/skipthoughts-folder
+```
+
+**Note**: I have been caught up with other non-research stuff, so I will add baseline model files like noAlignDraw and others during the week of Feb 29 - Mar 6.
+
+Feel free to email me if you have some questions or if you are uncertain about some parts of the code.
 
 ### Acknowledgments
 

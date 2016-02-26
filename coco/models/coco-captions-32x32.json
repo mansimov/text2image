@@ -1,0 +1,38 @@
+{
+    "model": [
+        {
+            "dimY": "25323",
+            "dimLangRNN": "128",
+            "dimAlign": "512",
+            "dimX": "3072",
+            "dimReadAttent": "9",
+            "dimWriteAttent": "9",
+            "dimRNNEnc": "550",
+            "dimRNNDec": "550",
+            "dimZ": "275",
+            "runSteps": "32",
+        }
+    ],
+
+    "validateAfter": "1",
+    "save": "True",
+    "lr": "0.001",
+    "epochs": "200",
+    "batch_size": "100",
+    "reduceLRAfter": "0",
+    "pathToWeights": "None",
+    "data": {
+        "train": {
+            "images": "/ais/gobi3/u/emansim/coco/train-images-32x32.npy",
+            "captions": "/ais/gobi3/u/emansim/coco/train-captions.npy",
+            "cap2im": "/ais/gobi3/u/emansim/coco/train-cap2im.pkl", 
+            "caplen": "/ais/gobi3/u/emansim/coco/train-captions-len.npy"
+        },
+        "dev": {
+            "images": "/ais/gobi3/u/emansim/coco/dev-images-32x32.npy",
+            "captions": "/ais/gobi3/u/emansim/coco/dev-captions.npy",
+            "cap2im": "/ais/gobi3/u/emansim/coco/dev-cap2im.pkl", 
+            "caplen": "/ais/gobi3/u/emansim/coco/dev-captions-len.npy"
+        }
+    }
+}
