@@ -19,8 +19,9 @@ import json
 import math
 import cPickle as pickle
 
-print theano.config.scan.allow_gc
-print theano.config.allow_gc
+assert(theano.config.scan.allow_gc == True), "set scan.allow_gc to True ; otherwise you will run out of gpu memory"
+assert(theano.config.allow_gc == True), "set allow_gc to True ; otherwise you will run out of gpu memory"
+
 sys.stdout.flush()
 
 homogeneous = __import__('homogeneous-data')

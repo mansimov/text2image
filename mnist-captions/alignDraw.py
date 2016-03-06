@@ -23,8 +23,9 @@ from random import randint
 create_captions = __import__('create-captions')
 create_mnist_captions_dataset = create_captions.create_mnist_captions_dataset
 
-print theano.config.scan.allow_gc
-print theano.config.allow_gc
+assert(theano.config.scan.allow_gc == True), "set scan.allow_gc to True ; otherwise you will run out of gpu memory"
+assert(theano.config.allow_gc == True), "set allow_gc to True ; otherwise you will run out of gpu memory"
+
 sys.stdout.flush()
 
 floatX = theano.config.floatX
@@ -168,7 +169,6 @@ def build_lang_encoder_and_attention_vae_decoder(dimY, dimLangRNN, dimAlign, dim
         x_t_hat = x - T.nnet.sigmoid(c_tm1)
 
         # Step 2
-        #rt = T.concatenate([x, xt_hat], axis=1)
         read_attent_params = T.dot(h_tm1_dec, W_hdec_read_attent) + b_read_attent # dimension batch_size x 5
         g_y_read, g_x_read, delta_read, sigma_read, gamma_read = read_attention_model.matrix2att(read_attent_params)
         
