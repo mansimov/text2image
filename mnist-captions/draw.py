@@ -307,7 +307,7 @@ class ReccurentAttentionVAE():
         if save == True:
             curr_time = datetime.datetime.now()
             if savedir == None:
-                savedir == "."
+                savedir = "."
             weights_f_name = ("%s/attention-vae-%s-%s-%s-%s-%s-%s.h5" % (savedir, curr_time.year, curr_time.month, curr_time.day, curr_time.hour, curr_time.minute, curr_time.second))
             print weights_f_name
 
